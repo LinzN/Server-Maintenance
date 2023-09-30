@@ -1,0 +1,6 @@
+main: de.linzn.serverMaintenance.MaintenancePlugin
+name: server-maintenance
+version: ${project.version}
+depend: [ ]
+buildJobName: ${buildServer.jobName}
+buildNumber: ${buildServer.buildNumber}
