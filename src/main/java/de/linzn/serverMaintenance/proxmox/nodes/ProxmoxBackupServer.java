@@ -46,7 +46,7 @@ public class ProxmoxBackupServer extends PbsClient {
 
     public void enable() {
         STEMSystemApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runBackupTask, 0, 3, 0, true);
-        STEMSystemApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runMaintenanceTask, 0, 12, 0, true);
+        //STEMSystemApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runMaintenanceTask, 0, 12, 0, true);
     }
 
     public String getName() {
@@ -201,6 +201,10 @@ public class ProxmoxBackupServer extends PbsClient {
                     this.informationBlock.setDescription("Backup done for ProxmoxNode " + proxmoxNode.getName());
                 }
             }
+            this.maintenancePrune();
+            this.maintenanceGC();
+            this.informationBlock.setDescription("Cleanup task done!");
+
             this.informationBlock.setDescription("Backups done!");
             this.informationBlock.setExpireTime(Instant.now().plus(8, ChronoUnit.HOURS));
             this.informationBlock.setIcon("SUCCESS");
