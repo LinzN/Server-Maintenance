@@ -37,8 +37,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.0.2</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>21</source>
+                    <target>21</target>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -65,13 +65,8 @@
                         </goals>
 
                         <configuration>
-                            <outputDirectory>target/export-lib</outputDirectory>
-                            <excludeGroupIds>de.stem, de.stem.plugins, org.yaml, org.json, org.eclipse,
-                                org.xerial, org.slf4j, com.google.*, com.google, org.codehaus.mojo,
-                                org.checkerframework, mysql
-                            </excludeGroupIds>
-                            <excludeArtifactIds>openJL, simplyDatabase, simplyLogger, simplyConfiguration, stemLink
-                            </excludeArtifactIds>
+                            <outputDirectory>target/libraries</outputDirectory>
+                            <excludeScope>provided</excludeScope>
                         </configuration>
                     </execution>
                 </executions>
@@ -85,11 +80,13 @@
             <groupId>de.stem</groupId>
             <artifactId>stem-system</artifactId>
             <version>1.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>it.corsinvest.proxmoxve</groupId>
             <artifactId>cv4pve-api-java</artifactId>
             <version>8.1.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
     <properties>
