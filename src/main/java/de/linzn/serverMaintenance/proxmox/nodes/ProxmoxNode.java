@@ -55,13 +55,14 @@ public class ProxmoxNode extends PveClient {
 
             JSONObject taskStatus;
             do {
-                taskStatus = this.get("/nodes/" + this.name + "/tasks/" + taskUUID + "/status", null).getResponse();
                 try {
+                    taskStatus = this.get("/nodes/" + this.name + "/tasks/" + taskUUID + "/status", null).getResponse();
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                } catch (Exception e) {
+                    taskStatus = null;
+                    STEMSystemApp.LOGGER.ERROR(e);
                 }
-            } while (taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
+            } while (taskStatus == null || taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
 
             if (!taskStatus.getJSONObject("data").getString("exitstatus").equalsIgnoreCase("OK")) {
                 STEMSystemApp.LOGGER.ERROR("Backup failed for VM " + taskStatus.getJSONObject("data").getInt("id"));
