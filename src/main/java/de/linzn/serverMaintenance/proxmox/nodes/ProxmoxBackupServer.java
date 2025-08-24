@@ -196,7 +196,7 @@ public class ProxmoxBackupServer extends PbsClient {
                 ProxmoxNode proxmoxNode = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxNodeSet().get(nodeName);
                 if (proxmoxNode != null) {
                     this.informationBlock.setDescription("Backup running for ProxmoxNode " + proxmoxNode.getName());
-                    proxmoxNode.executeVZDump();
+                    proxmoxNode.executeVZDump(this.informationBlock);
                     // later check if something failed!
                     this.informationBlock.setDescription("Backup done for ProxmoxNode " + proxmoxNode.getName());
                 }

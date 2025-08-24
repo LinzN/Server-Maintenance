@@ -2,6 +2,7 @@ package de.linzn.serverMaintenance.proxmox.nodes;
 
 import de.linzn.openJL.pairs.Pair;
 import de.stem.stemSystem.STEMSystemApp;
+import de.stem.stemSystem.modules.informationModule.InformationBlock;
 import it.corsinvest.proxmoxve.api.PveClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,7 +35,7 @@ public class ProxmoxNode extends PveClient {
         return backupResultList;
     }
 
-    public void executeVZDump() {
+    public void executeVZDump(InformationBlock informationBlock) {
         this.backupResultList.clear();
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
         for (int i = 0; i < vms.length(); i++) {
@@ -52,6 +53,7 @@ public class ProxmoxNode extends PveClient {
 
             JSONObject vzBackups = this.create("/nodes/" + this.name + "/vzdump", parameters).getResponse();
             taskUUID = vzBackups.getString("data");
+            informationBlock.setDescription("Backup running for ProxmoxNode " + this.getName() + " - VM: " + vmObject.get("vmid"));
 
             JSONObject taskStatus;
             do {

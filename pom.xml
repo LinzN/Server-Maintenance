@@ -16,8 +16,8 @@
     <name>server-maintenance</name>
     <repositories>
         <repository>
-            <id>Stem Builds Repository</id>
-            <url>https://builds.app.stem-system.de/plugin/repository/everything/</url>
+            <id>MirraNET Builds Repository</id>
+            <url>https://builds.mirranet.de/plugin/repository/everything/</url>
         </repository>
     </repositories>
     <build>
