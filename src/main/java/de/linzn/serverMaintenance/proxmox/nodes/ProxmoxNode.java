@@ -38,6 +38,7 @@ public class ProxmoxNode extends PveClient {
     public void executeVZDump(InformationBlock informationBlock) {
         this.backupResultList.clear();
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
+        vms.putAll( this.getNode().getLxc().vmlist().getResponse().getJSONArray("data"));
         for (int i = 0; i < vms.length(); i++) {
             JSONObject vmObject = vms.getJSONObject(i);
 
@@ -72,6 +73,7 @@ public class ProxmoxNode extends PveClient {
             }
             this.backupResultList.put(taskStatus.getJSONObject("data").getInt("id"), taskStatus.getJSONObject("data"));
         }
+
     }
 
     public void setPbsStorage(ProxmoxBackupServer pbs, String pbsStorage) {
