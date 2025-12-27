@@ -1,12 +1,13 @@
 /*
- * Copyright (C) 2023. Niklas Linz - All Rights Reserved
- * You may use, distribute and modify this code under the
- * terms of the LGPLv3 license, which unfortunately won't be
- * written for another century.
+ * Copyright (c) 2025 MirraNET, Niklas Linz. All rights reserved.
  *
- * You should have received a copy of the LGPLv3 license with
- * this file. If not, please write to: niklas.linz@enigmar.de
+ * This file is part of the MirraNET project and is licensed under the
+ * GNU Lesser General Public License v3.0 (LGPLv3).
  *
+ * You may use, distribute and modify this code under the terms
+ * of the LGPLv3 license. You should have received a copy of the
+ * license along with this file. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>
+ * or contact: niklas.linz@mirranet.de
  */
 
 package de.linzn.serverMaintenance;
@@ -14,8 +15,8 @@ package de.linzn.serverMaintenance;
 
 import de.linzn.serverMaintenance.proxmox.ProxmoxBackupManager;
 import de.linzn.serverMaintenance.proxmox.commands.MaintenanceCommand;
-import de.stem.stemSystem.STEMSystemApp;
-import de.stem.stemSystem.modules.pluginModule.STEMPlugin;
+import de.linzn.stem.STEMApp;
+import de.linzn.stem.modules.pluginModule.STEMPlugin;
 
 
 public class MaintenancePlugin extends STEMPlugin {
@@ -27,7 +28,7 @@ public class MaintenancePlugin extends STEMPlugin {
 
     public MaintenancePlugin() {
         maintenancePlugin = this;
-        STEMSystemApp.getInstance().getCommandModule().registerCommand("maintenance", new MaintenanceCommand());
+        STEMApp.getInstance().getCommandModule().registerCommand("maintenance", new MaintenanceCommand());
         this.proxmoxBackupManager = new ProxmoxBackupManager(this);
     }
 

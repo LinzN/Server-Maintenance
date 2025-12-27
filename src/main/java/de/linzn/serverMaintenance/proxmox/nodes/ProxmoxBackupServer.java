@@ -1,11 +1,23 @@
+/*
+ * Copyright (c) 2025 MirraNET, Niklas Linz. All rights reserved.
+ *
+ * This file is part of the MirraNET project and is licensed under the
+ * GNU Lesser General Public License v3.0 (LGPLv3).
+ *
+ * You may use, distribute and modify this code under the terms
+ * of the LGPLv3 license. You should have received a copy of the
+ * license along with this file. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>
+ * or contact: niklas.linz@mirranet.de
+ */
+
 package de.linzn.serverMaintenance.proxmox.nodes;
 
 
 import de.linzn.serverMaintenance.MaintenancePlugin;
 import de.linzn.serverMaintenance.utils.NetworkHelper;
-import de.stem.stemSystem.STEMSystemApp;
-import de.stem.stemSystem.modules.informationModule.InformationBlock;
-import de.stem.stemSystem.modules.informationModule.InformationIntent;
+import de.linzn.stem.STEMApp;
+import de.linzn.stem.modules.informationModule.InformationBlock;
+import de.linzn.stem.modules.informationModule.InformationIntent;
 import it.corsinvest.proxmoxbs.api.PbsClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -45,8 +57,7 @@ public class ProxmoxBackupServer extends PbsClient {
     }
 
     public void enable() {
-        STEMSystemApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runBackupTask, 0, 3, 0, true);
-        //STEMSystemApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runMaintenanceTask, 0, 12, 0, true);
+        STEMApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runBackupTask, 0, 3, 0, true);
     }
 
     public String getName() {
@@ -66,7 +77,7 @@ public class ProxmoxBackupServer extends PbsClient {
 
     public void waitReady() {
         if (!this.isAvailable()) {
-            STEMSystemApp.LOGGER.DEBUG("Waiting for PBS to be ready...");
+            STEMApp.LOGGER.DEBUG("Waiting for PBS to be ready...");
             do {
                 NetworkHelper.sendMagicPackage(this.mac, this.broadcastIP);
                 try {
@@ -75,12 +86,12 @@ public class ProxmoxBackupServer extends PbsClient {
                 }
             } while (!this.isAvailable());
         }
-        STEMSystemApp.LOGGER.DEBUG("PBS is ready!");
+        STEMApp.LOGGER.DEBUG("PBS is ready!");
     }
 
     public void sendSleep() {
         if (this.isAvailable()) {
-            STEMSystemApp.LOGGER.DEBUG("Sending PBS sleeping...");
+            STEMApp.LOGGER.DEBUG("Sending PBS sleeping...");
             Map<String, Object> parameters = new HashMap();
             parameters.put("command", "shutdown");
             JSONObject response = this.create("/nodes/elsa/status", parameters).getResponse();
@@ -88,7 +99,7 @@ public class ProxmoxBackupServer extends PbsClient {
     }
 
     public void maintenanceGC() {
-        STEMSystemApp.LOGGER.DEBUG("Starting GC Tasks!");
+        STEMApp.LOGGER.DEBUG("Starting GC Tasks!");
         this.informationBlock.setDescription("Garbage collector task running!");
         JSONArray datastores = this.get("/admin/datastore", null).getResponse().getJSONArray("data");
         for (int i = 0; i < datastores.length(); i++) {
@@ -108,11 +119,11 @@ public class ProxmoxBackupServer extends PbsClient {
                 }
             } while (taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
         }
-        STEMSystemApp.LOGGER.DEBUG("GC Tasks done!");
+        STEMApp.LOGGER.DEBUG("GC Tasks done!");
     }
 
     public void maintenancePrune() {
-        STEMSystemApp.LOGGER.DEBUG("Starting Prune Tasks!");
+        STEMApp.LOGGER.DEBUG("Starting Prune Tasks!");
         this.informationBlock.setDescription("Prune task running!");
         JSONArray pruneJobs = this.get("/admin/prune", null).getResponse().getJSONArray("data");
         for (int i = 0; i < pruneJobs.length(); i++) {
@@ -130,7 +141,7 @@ public class ProxmoxBackupServer extends PbsClient {
                 }
             } while (taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
         }
-        STEMSystemApp.LOGGER.DEBUG("Prune Tasks done!");
+        STEMApp.LOGGER.DEBUG("Prune Tasks done!");
     }
 
     public void addPveNode(String proxmoxNodeName) {
@@ -139,7 +150,7 @@ public class ProxmoxBackupServer extends PbsClient {
 
     public void runMaintenanceTask() {
         if (!this.locked.get()) {
-            STEMSystemApp.LOGGER.INFO("Maintenance Task started for pbs " + this.name);
+            STEMApp.LOGGER.INFO("Maintenance Task started for pbs " + this.name);
             if (this.informationBlock != null) {
                 informationBlock.expire();
                 informationBlock = null;
@@ -148,8 +159,8 @@ public class ProxmoxBackupServer extends PbsClient {
             this.informationBlock.setExpireTime(-1L);
             this.informationBlock.setIcon("PROGRESS");
             this.informationBlock.addIntent(InformationIntent.SHOW_DISPLAY);
-            STEMSystemApp.getInstance().getInformationModule().queueInformationBlock(this.informationBlock);
-            STEMSystemApp.LOGGER.DEBUG("Lock server " + this.name);
+            STEMApp.getInstance().getInformationModule().queueInformationBlock(this.informationBlock);
+            STEMApp.LOGGER.DEBUG("Lock server " + this.name);
             this.locked.set(true);
             this.waitReady();
             this.maintenancePrune();
@@ -166,16 +177,16 @@ public class ProxmoxBackupServer extends PbsClient {
                 Thread.sleep(TimeUnit.MINUTES.toMillis(1));
             } catch (InterruptedException ignored) {
             }
-            STEMSystemApp.LOGGER.DEBUG("Unlock server " + this.name);
+            STEMApp.LOGGER.DEBUG("Unlock server " + this.name);
             this.locked.set(false);
-            STEMSystemApp.LOGGER.INFO("Maintenance Task done for pbs " + this.name);
+            STEMApp.LOGGER.INFO("Maintenance Task done for pbs " + this.name);
         } else {
-            STEMSystemApp.LOGGER.ERROR("Server is locked: " + this.name);
+            STEMApp.LOGGER.ERROR("Server is locked: " + this.name);
         }
     }
 
     public void runBackupTask() {
-        STEMSystemApp.LOGGER.INFO("Backup Task started for pbs " + this.name);
+        STEMApp.LOGGER.INFO("Backup Task started for pbs " + this.name);
         if (!this.locked.get()) {
             if (this.informationBlock != null) {
                 informationBlock.expire();
@@ -185,8 +196,8 @@ public class ProxmoxBackupServer extends PbsClient {
             this.informationBlock.setExpireTime(-1L);
             this.informationBlock.setIcon("PROGRESS");
             this.informationBlock.addIntent(InformationIntent.SHOW_DISPLAY);
-            STEMSystemApp.getInstance().getInformationModule().queueInformationBlock(informationBlock);
-            STEMSystemApp.LOGGER.DEBUG("Lock server " + this.name);
+            STEMApp.getInstance().getInformationModule().queueInformationBlock(informationBlock);
+            STEMApp.LOGGER.DEBUG("Lock server " + this.name);
             this.locked.set(true);
             this.informationBlock.setDescription("Waiting to be ready...");
             this.waitReady();
@@ -218,11 +229,11 @@ public class ProxmoxBackupServer extends PbsClient {
                 Thread.sleep(TimeUnit.MINUTES.toMillis(1));
             } catch (InterruptedException ignored) {
             }
-            STEMSystemApp.LOGGER.DEBUG("Unlock server " + this.name);
+            STEMApp.LOGGER.DEBUG("Unlock server " + this.name);
             this.locked.set(false);
-            STEMSystemApp.LOGGER.INFO("Backup Task done for pbs " + this.name);
+            STEMApp.LOGGER.INFO("Backup Task done for pbs " + this.name);
         } else {
-            STEMSystemApp.LOGGER.ERROR("Server is locked: " + this.name);
+            STEMApp.LOGGER.ERROR("Server is locked: " + this.name);
         }
     }
 }

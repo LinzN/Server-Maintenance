@@ -1,8 +1,20 @@
+/*
+ * Copyright (c) 2025 MirraNET, Niklas Linz. All rights reserved.
+ *
+ * This file is part of the MirraNET project and is licensed under the
+ * GNU Lesser General Public License v3.0 (LGPLv3).
+ *
+ * You may use, distribute and modify this code under the terms
+ * of the LGPLv3 license. You should have received a copy of the
+ * license along with this file. If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>
+ * or contact: niklas.linz@mirranet.de
+ */
+
 package de.linzn.serverMaintenance.proxmox.nodes;
 
 import de.linzn.openJL.pairs.Pair;
-import de.stem.stemSystem.STEMSystemApp;
-import de.stem.stemSystem.modules.informationModule.InformationBlock;
+import de.linzn.stem.STEMApp;
+import de.linzn.stem.modules.informationModule.InformationBlock;
 import it.corsinvest.proxmoxve.api.PveClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +50,7 @@ public class ProxmoxNode extends PveClient {
     public void executeVZDump(InformationBlock informationBlock) {
         this.backupResultList.clear();
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
-        vms.putAll( this.getNode().getLxc().vmlist().getResponse().getJSONArray("data"));
+        vms.putAll(this.getNode().getLxc().vmlist().getResponse().getJSONArray("data"));
         for (int i = 0; i < vms.length(); i++) {
             JSONObject vmObject = vms.getJSONObject(i);
 
@@ -63,13 +75,13 @@ public class ProxmoxNode extends PveClient {
                     Thread.sleep(1000);
                 } catch (Exception e) {
                     taskStatus = null;
-                    STEMSystemApp.LOGGER.ERROR(e);
+                    STEMApp.LOGGER.ERROR(e);
                 }
             } while (taskStatus == null || taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
 
             if (!taskStatus.getJSONObject("data").getString("exitstatus").equalsIgnoreCase("OK")) {
-                STEMSystemApp.LOGGER.ERROR("Backup failed for VM " + taskStatus.getJSONObject("data").getInt("id"));
-                STEMSystemApp.LOGGER.ERROR("ERROR: " + taskStatus.getJSONObject("data").getString("exitstatus"));
+                STEMApp.LOGGER.ERROR("Backup failed for VM " + taskStatus.getJSONObject("data").getInt("id"));
+                STEMApp.LOGGER.ERROR("ERROR: " + taskStatus.getJSONObject("data").getString("exitstatus"));
             }
             this.backupResultList.put(taskStatus.getJSONObject("data").getInt("id"), taskStatus.getJSONObject("data"));
         }
