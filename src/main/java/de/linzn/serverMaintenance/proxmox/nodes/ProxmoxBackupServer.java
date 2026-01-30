@@ -185,6 +185,66 @@ public class ProxmoxBackupServer extends PbsClient {
         }
     }
 
+    public void runSyncTask() {
+        if (!this.locked.get()) {
+            STEMApp.LOGGER.INFO("Sync Task started for pbs " + this.name);
+            if (this.informationBlock != null) {
+                informationBlock.expire();
+                informationBlock = null;
+            }
+            this.informationBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), "Preparing sync task...", MaintenancePlugin.maintenancePlugin);
+            this.informationBlock.setExpireTime(-1L);
+            this.informationBlock.setIcon("PROGRESS");
+            this.informationBlock.addIntent(InformationIntent.SHOW_DISPLAY);
+            STEMApp.getInstance().getInformationModule().queueInformationBlock(this.informationBlock);
+            STEMApp.LOGGER.DEBUG("Lock server " + this.name);
+            this.locked.set(true);
+            this.waitReady();
+            this.syncBackupNodes();
+            this.maintenancePrune();
+            this.maintenanceGC();
+            this.informationBlock.setDescription("Sync task done!");
+            this.informationBlock.setExpireTime(Instant.now().plus(8, ChronoUnit.HOURS));
+            this.informationBlock.setIcon("SUCCESS");
+            try {
+                Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+            } catch (InterruptedException ignored) {
+            }
+            this.sendSleep();
+            try {
+                Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+            } catch (InterruptedException ignored) {
+            }
+            STEMApp.LOGGER.DEBUG("Unlock server " + this.name);
+            this.locked.set(false);
+            STEMApp.LOGGER.INFO("Sync Task done for pbs " + this.name);
+        } else {
+            STEMApp.LOGGER.ERROR("Server is locked: " + this.name);
+        }
+    }
+
+    public void syncBackupNodes() {
+        STEMApp.LOGGER.DEBUG("Starting Sync Tasks!");
+        this.informationBlock.setDescription("Sync task running!");
+        JSONArray syncJobs = this.get("/admin/sync", null).getResponse().getJSONArray("data");
+        for (int i = 0; i < syncJobs.length(); i++) {
+            JSONObject syncJob = syncJobs.getJSONObject(i);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("id", syncJob.getString("id"));
+            String jobId = this.create("/admin/sync/" + syncJob.getString("id") + "/run", null).getResponse().getString("data");
+            JSONObject taskStatus;
+            do {
+                taskStatus = this.get("/nodes/" + this.name + "/tasks/" + jobId + "/status", null).getResponse();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            } while (taskStatus.getJSONObject("data").getString("status").equalsIgnoreCase("running"));
+        }
+        STEMApp.LOGGER.DEBUG("Sync Tasks done!");
+    }
+
     public void runBackupTask() {
         STEMApp.LOGGER.INFO("Backup Task started for pbs " + this.name);
         if (!this.locked.get()) {
@@ -212,6 +272,7 @@ public class ProxmoxBackupServer extends PbsClient {
                     this.informationBlock.setDescription("Backup done for ProxmoxNode " + proxmoxNode.getName());
                 }
             }
+            this.syncBackupNodes();
             this.maintenancePrune();
             this.maintenanceGC();
             this.informationBlock.setDescription("Cleanup task done!");

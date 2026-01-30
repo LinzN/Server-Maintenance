@@ -42,6 +42,15 @@ public class MaintenanceCommand implements ICommand {
                 } else {
                     STEMApp.LOGGER.ERROR("No server found with name " + pbsName);
                 }
+            } else if (command.equalsIgnoreCase("sync")) {
+                String pbsName = strings[1];
+                ProxmoxBackupServer pbs = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxBackupServerSet().get(pbsName);
+                if (pbs != null) {
+                    STEMApp.LOGGER.INFO("Found PBS " + pbsName);
+                    STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, pbs::runSyncTask);
+                } else {
+                    STEMApp.LOGGER.ERROR("No server found with name " + pbsName);
+                }
             }
         }
         return false;
