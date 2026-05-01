@@ -112,7 +112,7 @@ public class ProxmoxNode extends PveClient {
             if (!taskStatus.getJSONObject("data").getString("exitstatus").equalsIgnoreCase("OK")) {
                 STEMApp.LOGGER.ERROR("Backup failed for VM " + taskStatus.getJSONObject("data").getInt("id"));
                 STEMApp.LOGGER.ERROR("ERROR: " + taskStatus.getJSONObject("data").getString("exitstatus"));
-                this.errorResultSet.add(this.getName() + " - " + vmObject.get("vmid").toString());
+                this.errorResultSet.add(this.getName() + " - VM: " + vmObject.get("vmid"));
             }
             this.backupResultList.put(taskStatus.getJSONObject("data").getInt("id"), taskStatus.getJSONObject("data"));
         }
