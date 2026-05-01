@@ -277,6 +277,7 @@ public class ProxmoxBackupServer extends PbsClient {
                             errorNodeBlock.setIcon("SERVER");
                             errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
                             errorNodeBlock.addIntent(InformationIntent.SHOW_DISPLAY);
+                            STEMApp.getInstance().getInformationModule().queueInformationBlock(errorNodeBlock);
                         }
                     } else {
                         String error = "Backup failed for proxmox node " + this.name + ". Not reachable. Skipping backup.";
@@ -285,6 +286,7 @@ public class ProxmoxBackupServer extends PbsClient {
                         errorNodeBlock.setIcon("SERVER");
                         errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
                         errorNodeBlock.addIntent(InformationIntent.SHOW_DISPLAY);
+                        STEMApp.getInstance().getInformationModule().queueInformationBlock(errorNodeBlock);
                     }
                     this.informationBlock.setDescription("Backup done for ProxmoxNode " + proxmoxNode.getName());
                 }
