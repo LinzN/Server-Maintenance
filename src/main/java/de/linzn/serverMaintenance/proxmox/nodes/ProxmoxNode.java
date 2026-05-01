@@ -19,6 +19,8 @@ import it.corsinvest.proxmoxve.api.PveClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,13 +50,16 @@ public class ProxmoxNode extends PveClient {
     }
 
     public boolean isReachable(){
+        int timeoutMillis = 3000;
         try {
-            String version = this.getNode().getVersion().version().toString();
-            STEMApp.LOGGER.CORE("PVE Version: " + version);
-            STEMApp.LOGGER.CORE("Online");
-            return true;
-        } catch(Exception e){
-            STEMApp.LOGGER.ERROR("Error. Not reachable!");
+            URL url = new URL(this.getApiUrl());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setConnectTimeout(timeoutMillis);
+            connection.setReadTimeout(timeoutMillis);
+            connection.setRequestMethod("HEAD");
+            int responseCode = connection.getResponseCode();
+            return (200 <= responseCode && responseCode <= 399);
+        } catch (Exception e) {
             return false;
         }
     }
@@ -63,7 +68,7 @@ public class ProxmoxNode extends PveClient {
         this.backupResultList.clear();
 
         if(!this.isReachable()) {
-            STEMApp.LOGGER.ERROR("Cancel Backup for " + this.name);
+            STEMApp.LOGGER.ERROR("Not reachable!!! Cancel Backup for " + this.name);
             return;
         }
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
