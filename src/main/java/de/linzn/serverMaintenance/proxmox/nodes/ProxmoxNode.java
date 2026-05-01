@@ -23,11 +23,14 @@ import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class ProxmoxNode extends PveClient {
     private final String name;
     private final Map<Integer, JSONObject> backupResultList;
+    private final Set<String> errorResultSet;
 
     private Pair<String, String> pbsStorage;
 
@@ -35,6 +38,7 @@ public class ProxmoxNode extends PveClient {
         super(hostname, port);
         this.name = name;
         this.backupResultList = new HashMap<>();
+        this.errorResultSet = new HashSet<>();
         this.setApiToken(authToken);
     }
 
@@ -50,8 +54,12 @@ public class ProxmoxNode extends PveClient {
         return backupResultList;
     }
 
+    public Set<String> getErrorResultSet() {
+        return errorResultSet;
+    }
+
     public boolean isReachable(){
-        int timeoutMillis = 3000;
+        int timeoutMillis = 10000;
         try {
             URL url = new URL(this.getApiUrl());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -69,11 +77,8 @@ public class ProxmoxNode extends PveClient {
 
     public void executeVZDump(InformationBlock informationBlock) {
         this.backupResultList.clear();
+        this.errorResultSet.clear();
 
-        if(!this.isReachable()) {
-            STEMApp.LOGGER.ERROR("Not reachable!!! Cancel Backup for " + this.name);
-            return;
-        }
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
         vms.putAll(this.getNode().getLxc().vmlist().getResponse().getJSONArray("data"));
         for (int i = 0; i < vms.length(); i++) {
@@ -107,6 +112,7 @@ public class ProxmoxNode extends PveClient {
             if (!taskStatus.getJSONObject("data").getString("exitstatus").equalsIgnoreCase("OK")) {
                 STEMApp.LOGGER.ERROR("Backup failed for VM " + taskStatus.getJSONObject("data").getInt("id"));
                 STEMApp.LOGGER.ERROR("ERROR: " + taskStatus.getJSONObject("data").getString("exitstatus"));
+                this.errorResultSet.add(vmObject.get("vmid").toString());
             }
             this.backupResultList.put(taskStatus.getJSONObject("data").getInt("id"), taskStatus.getJSONObject("data"));
         }

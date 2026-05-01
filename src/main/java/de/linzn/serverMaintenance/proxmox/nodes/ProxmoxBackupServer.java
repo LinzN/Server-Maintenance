@@ -267,8 +267,25 @@ public class ProxmoxBackupServer extends PbsClient {
                 ProxmoxNode proxmoxNode = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxNodeSet().get(nodeName);
                 if (proxmoxNode != null) {
                     this.informationBlock.setDescription("Backup running for ProxmoxNode " + proxmoxNode.getName());
-                    proxmoxNode.executeVZDump(this.informationBlock);
-                    // later check if something failed!
+                    if(proxmoxNode.isReachable()) {
+                        proxmoxNode.executeVZDump(this.informationBlock);
+                        Set<String> errors = proxmoxNode.getErrorResultSet();
+                        if(!errors.isEmpty()){
+                            String error = "Some backup failed on proxmox node " + this.name + ". Affected virtual machines: " + errors;
+                            InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                            errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
+                            errorNodeBlock.setIcon("SERVER");
+                            errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
+                            errorNodeBlock.addIntent(InformationIntent.SHOW_DISPLAY);
+                        }
+                    } else {
+                        String error = "Backup failed for proxmox node " + this.name + ". Not reachable. Skipping backup.";
+                        InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                        errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
+                        errorNodeBlock.setIcon("SERVER");
+                        errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
+                        errorNodeBlock.addIntent(InformationIntent.SHOW_DISPLAY);
+                    }
                     this.informationBlock.setDescription("Backup done for ProxmoxNode " + proxmoxNode.getName());
                 }
             }
