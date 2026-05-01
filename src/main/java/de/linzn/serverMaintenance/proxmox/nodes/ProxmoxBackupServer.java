@@ -271,8 +271,8 @@ public class ProxmoxBackupServer extends PbsClient {
                         proxmoxNode.executeVZDump(this.informationBlock);
                         Set<String> errors = proxmoxNode.getErrorResultSet();
                         if(!errors.isEmpty()){
-                            String error = "Some backup failed on proxmox node " + this.name + ". Affected virtual machines: " + errors;
-                            InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                            String error = "Some backup failed on proxmox node " + proxmoxNode.getName() + ". Affected virtual machines: " + errors;
+                            InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + proxmoxNode.getName().toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
                             errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
                             errorNodeBlock.setIcon("SERVER");
                             errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
@@ -280,8 +280,8 @@ public class ProxmoxBackupServer extends PbsClient {
                             STEMApp.getInstance().getInformationModule().queueInformationBlock(errorNodeBlock);
                         }
                     } else {
-                        String error = "Backup failed for proxmox node " + this.name + ". Not reachable. Skipping backup.";
-                        InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                        String error = "Backup failed for proxmox node " + proxmoxNode.getName() + ". Not reachable. Skipping backup.";
+                        InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + proxmoxNode.getName().toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
                         errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
                         errorNodeBlock.setIcon("SERVER");
                         errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
