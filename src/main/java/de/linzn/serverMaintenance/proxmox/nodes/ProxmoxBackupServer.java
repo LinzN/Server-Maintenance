@@ -272,7 +272,7 @@ public class ProxmoxBackupServer extends PbsClient {
                         Set<String> errors = proxmoxNode.getErrorResultSet();
                         if(!errors.isEmpty()){
                             String error = "Some backup failed on proxmox node " + proxmoxNode.getName() + ". Affected virtual machines: " + errors;
-                            InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + proxmoxNode.getName().toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                            InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
                             errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
                             errorNodeBlock.setIcon("SERVER");
                             errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
@@ -281,7 +281,7 @@ public class ProxmoxBackupServer extends PbsClient {
                         }
                     } else {
                         String error = "Backup failed for proxmox node " + proxmoxNode.getName() + ". Not reachable. Skipping backup.";
-                        InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + proxmoxNode.getName().toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
+                        InformationBlock errorNodeBlock = new InformationBlock("Maintenance - " + this.name.toUpperCase(), error, MaintenancePlugin.maintenancePlugin, error);
                         errorNodeBlock.setExpireTime(Instant.now().plus(12, ChronoUnit.HOURS));
                         errorNodeBlock.setIcon("SERVER");
                         errorNodeBlock.addIntent(InformationIntent.NOTIFY_USER);
