@@ -47,8 +47,25 @@ public class ProxmoxNode extends PveClient {
         return backupResultList;
     }
 
+    public boolean isReachable(){
+        try {
+            String version = this.getNode().getVersion().version().toString();
+            STEMApp.LOGGER.CORE("PVE Version: " + version);
+            STEMApp.LOGGER.CORE("Online");
+            return true;
+        } catch(Exception e){
+            STEMApp.LOGGER.ERROR("Error. Not reachable!");
+            return false;
+        }
+    }
+
     public void executeVZDump(InformationBlock informationBlock) {
         this.backupResultList.clear();
+
+        if(!this.isReachable()) {
+            STEMApp.LOGGER.ERROR("Cancel Backup for " + this.name);
+            return;
+        }
         JSONArray vms = this.getNode().getQemu().vmlist().getResponse().getJSONArray("data");
         vms.putAll(this.getNode().getLxc().vmlist().getResponse().getJSONArray("data"));
         for (int i = 0; i < vms.length(); i++) {
