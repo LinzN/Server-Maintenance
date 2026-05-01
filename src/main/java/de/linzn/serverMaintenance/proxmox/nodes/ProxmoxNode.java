@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,10 +58,12 @@ public class ProxmoxNode extends PveClient {
             connection.setConnectTimeout(timeoutMillis);
             connection.setReadTimeout(timeoutMillis);
             connection.setRequestMethod("HEAD");
-            int responseCode = connection.getResponseCode();
-            return (200 <= responseCode && responseCode <= 399);
-        } catch (Exception e) {
+            connection.connect();
+            return true;
+        } catch (SocketTimeoutException e) {
             return false;
+        } catch (Exception e) {
+            return true;
         }
     }
 
