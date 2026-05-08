@@ -86,16 +86,22 @@ public class ProxmoxNode extends PveClient {
 
             JSONObject config = null;
             if(vmObject.has("type")){
+                STEMApp.LOGGER.CORE("TEST0");
                 if(vmObject.getString("type").equalsIgnoreCase("lxc")){
                     config = this.get("/nodes/" + this.name + "/lxc/" + vmObject.get("vmid") + "/config", null).getResponse();
+                    STEMApp.LOGGER.CORE("TEST1");
                 }
+                STEMApp.LOGGER.CORE("TEST2");
             } else {
+                STEMApp.LOGGER.CORE("TEST3");
                 config = this.get("/nodes/" + this.name + "/qemu/" + vmObject.get("vmid") + "/config", null).getResponse();
             }
 
-            if(config.has("tags")){
+            if(config != null && config.has("tags")){
+                STEMApp.LOGGER.CORE("TEST4");
                 if (config.getString("tags").toLowerCase().contains("no_backup")){
-                    STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid")  + "because  contains tag 'no_backup'");
+                    STEMApp.LOGGER.CORE("TEST5");
+                    STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid")  + " because  contains tag 'no_backup'");
                     continue;
                 }
             }
@@ -104,7 +110,7 @@ public class ProxmoxNode extends PveClient {
             parameters.put("mailnotification", "always");
             parameters.put("quiet", 1);
             parameters.put("storage", this.pbsStorage.getValue());
-            parameters.put("notes-template", "{{guestname}}-STEM-API");
+            parameters.put("notes-template", "{{guestname}}-BY-MIRRA");
             parameters.put("mode", "snapshot");
             parameters.put("vmid", vmObject.get("vmid"));
 
