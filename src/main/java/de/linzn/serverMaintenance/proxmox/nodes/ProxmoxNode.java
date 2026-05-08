@@ -86,21 +86,15 @@ public class ProxmoxNode extends PveClient {
 
             JSONObject config = null;
             if(vmObject.has("type")){
-                STEMApp.LOGGER.CORE("TEST0");
                 if(vmObject.getString("type").equalsIgnoreCase("lxc")){
                     config = this.get("/nodes/" + this.name + "/lxc/" + vmObject.get("vmid") + "/config", null).getResponse();
-                    STEMApp.LOGGER.CORE("TEST1");
                 }
-                STEMApp.LOGGER.CORE("TEST2");
             } else {
-                STEMApp.LOGGER.CORE("TEST3");
                 config = this.get("/nodes/" + this.name + "/qemu/" + vmObject.get("vmid") + "/config", null).getResponse();
             }
 
-            if(config != null && config.has("tags")){
-                STEMApp.LOGGER.CORE("TEST4");
-                if (config.getString("tags").toLowerCase().contains("no_backup")){
-                    STEMApp.LOGGER.CORE("TEST5");
+            if(config != null && config.has("data") && config.getJSONObject("data").has("tags")){
+                if (config.getJSONObject("data").getString("tags").toLowerCase().contains("no_backup")){
                     STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid")  + " because  contains tag 'no_backup'");
                     continue;
                 }
