@@ -58,7 +58,7 @@ public class ProxmoxNode extends PveClient {
         return errorResultSet;
     }
 
-    public boolean isReachable(){
+    public boolean isReachable() {
         int timeoutMillis = 10000;
         try {
             URL url = new URL(this.getApiUrl());
@@ -85,17 +85,17 @@ public class ProxmoxNode extends PveClient {
             JSONObject vmObject = vms.getJSONObject(i);
 
             JSONObject config = null;
-            if(vmObject.has("type")){
-                if(vmObject.getString("type").equalsIgnoreCase("lxc")){
+            if (vmObject.has("type")) {
+                if (vmObject.getString("type").equalsIgnoreCase("lxc")) {
                     config = this.get("/nodes/" + this.name + "/lxc/" + vmObject.get("vmid") + "/config", null).getResponse();
                 }
             } else {
                 config = this.get("/nodes/" + this.name + "/qemu/" + vmObject.get("vmid") + "/config", null).getResponse();
             }
 
-            if(config != null && config.has("data") && config.getJSONObject("data").has("tags")){
-                if (config.getJSONObject("data").getString("tags").toLowerCase().contains("no_backup")){
-                    STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid")  + " because  contains tag 'no_backup'");
+            if (config != null && config.has("data") && config.getJSONObject("data").has("tags")) {
+                if (config.getJSONObject("data").getString("tags").toLowerCase().contains("no_backup")) {
+                    STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid") + " because contains tag 'no_backup'");
                     continue;
                 }
             }
