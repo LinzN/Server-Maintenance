@@ -34,9 +34,9 @@ public class MaintenanceCommand implements ICommand {
                     if(strings.length > 2) {
                         String pveName = strings[2];
                         ProxmoxNode node = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxNodeSet().get(pveName);
-                        STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, () -> pbs.runBackupTask(node));
                         if(node != null){
                             STEMApp.LOGGER.INFO("Found PVE node " + pveName);
+                            STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, () -> pbs.runBackupTask(node));
                         } else {
                             STEMApp.LOGGER.ERROR("No pve node found with name " + pveName);
                         }
