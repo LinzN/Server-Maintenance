@@ -57,7 +57,7 @@ public class ProxmoxBackupServer extends PbsClient {
     }
 
     public void enable() {
-        STEMApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin, this::runBackupTask, 0, 3, 0, true);
+        STEMApp.getInstance().getScheduler().runFixedScheduler(MaintenancePlugin.maintenancePlugin,  () -> this.runBackupTask(null), 0, 3, 0, true);
     }
 
     public String getName() {
@@ -245,7 +245,7 @@ public class ProxmoxBackupServer extends PbsClient {
         STEMApp.LOGGER.DEBUG("Sync Tasks done!");
     }
 
-    public void runBackupTask() {
+    public void runBackupTask(ProxmoxNode node) {
         STEMApp.LOGGER.INFO("Backup Task started for pbs " + this.name);
         if (!this.locked.get()) {
             if (this.informationBlock != null) {
@@ -263,7 +263,15 @@ public class ProxmoxBackupServer extends PbsClient {
             this.waitReady();
             this.informationBlock.setDescription("Server is ready...");
 
-            for (String nodeName : pveNodes) {
+
+            Set<String> backupNodeList = new HashSet<>();
+            if(node == null){
+                backupNodeList.addAll(this.pveNodes);
+            } else {
+                backupNodeList.add(node.getName());
+            }
+
+            for (String nodeName : backupNodeList) {
                 ProxmoxNode proxmoxNode = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxNodeSet().get(nodeName);
                 if (proxmoxNode != null) {
                     this.informationBlock.setDescription("Backup running for ProxmoxNode " + proxmoxNode.getName());

@@ -84,6 +84,22 @@ public class ProxmoxNode extends PveClient {
         for (int i = 0; i < vms.length(); i++) {
             JSONObject vmObject = vms.getJSONObject(i);
 
+            JSONObject config = null;
+            if(vmObject.has("type")){
+                if(vmObject.getString("type").equalsIgnoreCase("lxc")){
+                    config = this.get("/nodes/" + this.name + "/lxc/" + vmObject.get("vmid") + "/config", null).getResponse();
+                }
+            } else {
+                config = this.get("/nodes/" + this.name + "/qemu/" + vmObject.get("vmid") + "/config", null).getResponse();
+            }
+
+            if(config.has("tags")){
+                if (config.getString("tags").toLowerCase().contains("no_backup")){
+                    STEMApp.LOGGER.CORE("Skipping backup for " + this.getName() + " - VM: " + vmObject.get("vmid")  + "because  contains tag 'no_backup'");
+                    continue;
+                }
+            }
+
             Map<String, Object> parameters = new HashMap();
             parameters.put("mailnotification", "always");
             parameters.put("quiet", 1);

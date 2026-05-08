@@ -14,6 +14,7 @@ package de.linzn.serverMaintenance.proxmox.commands;
 
 import de.linzn.serverMaintenance.MaintenancePlugin;
 import de.linzn.serverMaintenance.proxmox.nodes.ProxmoxBackupServer;
+import de.linzn.serverMaintenance.proxmox.nodes.ProxmoxNode;
 import de.linzn.stem.STEMApp;
 import de.linzn.stem.modules.commandModule.ICommand;
 
@@ -29,7 +30,19 @@ public class MaintenanceCommand implements ICommand {
                 ProxmoxBackupServer pbs = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxBackupServerSet().get(pbsName);
                 if (pbs != null) {
                     STEMApp.LOGGER.INFO("Found PBS " + pbsName);
-                    STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, pbs::runBackupTask);
+
+                    if(strings.length > 2) {
+                        String pveName = strings[2];
+                        ProxmoxNode node = MaintenancePlugin.maintenancePlugin.proxmoxBackupManager.getProxmoxNodeSet().get(pveName);
+                        STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, () -> pbs.runBackupTask(node));
+                        if(node != null){
+                            STEMApp.LOGGER.INFO("Found PVE node " + pveName);
+                        } else {
+                            STEMApp.LOGGER.ERROR("No pve node found with name " + pveName);
+                        }
+                    } else {
+                        STEMApp.getInstance().getScheduler().runTask(MaintenancePlugin.maintenancePlugin, () -> pbs.runBackupTask(null));
+                    }
                 } else {
                     STEMApp.LOGGER.ERROR("No server found with name " + pbsName);
                 }
